@@ -5,11 +5,15 @@ package fr.mds.mongodb;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import fr.mds.mongodb.util.ScannerSingleton;
+import org.bson.Document;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class App {
     private static final String ARG_HOST = "--host";
@@ -22,11 +26,11 @@ public class App {
         String dbName = "";
 
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals(ARG_HOST) && args[i+1] != null) {
+            if (args[i].equals(ARG_HOST) && args.length >= i + 1 && args[i+1] != null) {
                 host = args[i+1];
-            } else if (args[i].equals(ARG_PORT) && args[i+1] != null) {
+            } else if (args[i].equals(ARG_PORT) && args.length >= i + 1 && args[i+1] != null) {
                 port = args[i+1];
-            } else if (args[i].equals(ARG_DBNAME) && args[i+1] != null) {
+            } else if (args[i].equals(ARG_DBNAME) && args.length >= i + 1 && args[i+1] != null) {
                 dbName = args[i+1];
             }
         }
@@ -36,10 +40,13 @@ public class App {
             return;
         }
 
-        MongoClient mongoClient = createMongoClient(host,  Integer.getInteger(port));
+        MongoClient mongoClient = App.createMongoClient(host, Integer.parseInt(port));
         MongoDatabase database = mongoClient.getDatabase(dbName);
 
-        System.out.println(database.listCollectionNames());
+        /*
+        String result = ScannerSingleton.getInstance().getInput("Enter something");
+        System.out.println(result);
+        */
     }
 
     public static MongoClient createMongoClient(final String host, final Integer port)
