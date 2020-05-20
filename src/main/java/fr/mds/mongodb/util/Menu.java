@@ -6,13 +6,13 @@ public class Menu {
     public static String numberMenuSelector(ArrayList<String> collections, String question)
     {
         String result = "";
-        int choice = 0;
-        int i = 0;
+        int choice;
+        int i;
 
         do {
             i = 0;
             for (String collectionName : collections) {
-                System.out.println(i++ + ")" + collectionName);
+                System.out.println(i++ + ") " + collectionName);
             }
 
             choice = ScannerSingleton.getInstance().getInputNumber(question);
