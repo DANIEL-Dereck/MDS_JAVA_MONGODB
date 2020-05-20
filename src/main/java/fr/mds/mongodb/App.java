@@ -3,19 +3,53 @@
  */
 package fr.mds.mongodb;
 
+import com.mongodb.MongoClientSettings;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
+import java.util.Arrays;
+
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
-    }
+    private static final String ARG_HOST = "--host";
+    private static final String ARG_PORT = "--port";
+    private static final String ARG_DBNAME = "--dbName";
 
     public static void main(String[] args) {
-        MongoClient mongoClient = MongoClients.create(args[0]);
-        MongoDatabase database = mongoClient.getDatabase(args[1]);
+        String host = "localhost";
+        String port = "27018";
+        String dbName = "";
+
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals(ARG_HOST) && args[i+1] != null) {
+                host = args[i+1];
+            } else if (args[i].equals(ARG_PORT) && args[i+1] != null) {
+                port = args[i+1];
+            } else if (args[i].equals(ARG_DBNAME) && args[i+1] != null) {
+                dbName = args[i+1];
+            }
+        }
+
+        if (dbName.equals("")) {
+            System.out.println("ERROR: no database selected.");
+            return;
+        }
+
+        MongoClient mongoClient = createMongoClient(host,  Integer.getInteger(port));
+        MongoDatabase database = mongoClient.getDatabase(dbName);
 
         System.out.println(database.listCollectionNames());
+    }
+
+    public static MongoClient createMongoClient(final String host, final Integer port)
+    {
+        MongoClient client = MongoClients.create(
+                MongoClientSettings.builder()
+                        .applyToClusterSettings(builder ->
+                                builder.hosts(Arrays.asList(new ServerAddress(host, port))))
+                        .build());
+
+        return client;
     }
 }
