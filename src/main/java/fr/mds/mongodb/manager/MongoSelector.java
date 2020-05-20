@@ -6,7 +6,6 @@ import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MongoSelector {
     private MongoService mongos;
@@ -20,6 +19,10 @@ public class MongoSelector {
     {
         String collection = selectCollection();
         searchOrInsertDocument(collection);
+
+        if (Menu.menuYesNo("Continue to select collection ?").equals("yes")) {
+            run();
+        }
     }
 
     public String selectCollection()
@@ -45,18 +48,17 @@ public class MongoSelector {
         } else if (result.equals(insert)) {
             insert(collection);
         }
+
+        if (Menu.menuYesNo("Continue to search or insert ?").equals("yes")) {
+            searchOrInsertDocument(collection);
+        }
     }
 
     public void search(String collection) {
         ArrayList<String> fields = new ArrayList<>();
-        ArrayList<String> operators = new ArrayList<>();
-        operators.add("$eq");
-        operators.add("$nq");
-        operators.add("$in");
-        operators.add("$lt");
-        operators.add("$lte");
-        operators.add("$gt");
-        operators.add("$gte");
+        ArrayList<String> operators = new ArrayList<String>() {{
+            add("$eq"); add("$ne"); add("$in"); add("$lt"); add("$lte"); add("$gt"); add("$gte");
+            }};
 
         mongos.getMongoDatabase().getCollection(collection).find().forEach(x -> {
             x.keySet().forEach(y -> {
@@ -76,13 +78,16 @@ public class MongoSelector {
 
         mongos.getMongoDatabase().getCollection(collection).find(whereQuery).forEach(x -> System.out.println(x));
 
-        String choice = Menu.numberMenuSelector(new ArrayList<String>(new ArrayList<String>() {{ add("yes"); add("no");}}) , "Continue to search ?");
-        if (choice.equals("yes")) {
+        if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
             search(collection);
         }
     }
 
     public void insert(String collection) {
         System.out.println("WIP insert");
+
+        if (Menu.menuYesNo("Continue to insert ?").equals("yes")) {
+            insert(collection);
+        }
     }
 }
