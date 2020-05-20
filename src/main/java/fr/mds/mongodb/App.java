@@ -3,12 +3,15 @@
  */
 package fr.mds.mongodb;
 
-import com.mongodb.MongoClientSettings;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
+import fr.mds.mongodb.manager.MongoSelector;
 import fr.mds.mongodb.services.MongoService;
+import fr.mds.mongodb.util.ScannerSingleton;
+import org.bson.Document;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class App {
     private static final String ARG_HOST = "--host";
@@ -35,21 +38,11 @@ public class App {
             return;
         }
 
-        MongoService mongo = new MongoService(host, Integer.parseInt(port), dbName);
-
-        MongoIterable<String> coll = mongo.getMongoDatabase().listCollectionNames();
-        for (String collectionName: coll) {
-            System.out.println(collectionName);
-        }
-
-        /*
-        String result = ScannerSingleton.getInstance().getInput("Enter something");
-        System.out.println(result);
-        */
+        new MongoSelector(new MongoService(host, Integer.parseInt(port), dbName)).run();
     }
 
     public static void debug()
     {
-        System.out.println("Hola");
+        System.out.println("Debug");
     }
 }

@@ -22,12 +22,24 @@ public class ScannerSingleton {
 
     public String getInput()
     {
-        return scanner.next();
+        return scanner.nextLine();
     }
 
-    public String getInput(String question)
+    public String getInputString(String question)
     {
         System.out.println(question);
-        return scanner.next();
+        return getInput();
     }
+
+    public int getInputNumber()
+    {
+        return scanner.nextInt();
+    }
+
+    public int getInputNumber(String question)
+    {
+        System.out.println(question);
+        return getInputNumber();
+    }
+
 }

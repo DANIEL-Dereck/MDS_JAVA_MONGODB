@@ -9,13 +9,13 @@ import com.mongodb.client.MongoDatabase;
 import java.util.Arrays;
 
 public class MongoService {
-    private String host = "localhost";
-    private Integer port = 27018;
-    private String dbName = "";
+    private final String host;
+    private final Integer port;
+    private final String dbName;
     private MongoClient mongoClient;
     private MongoDatabase database;
 
-    public MongoService(String host, Integer port, String dbName)
+    public MongoService(final String host, final Integer port, final String dbName)
     {
         this.host = host;
         this.port = port;
@@ -24,7 +24,11 @@ public class MongoService {
 
     public MongoClient getMongoClient() {
         if (this.mongoClient == null) {
-            this.mongoClient = createMongoClient(this.host, this.port);
+            this.mongoClient = MongoClients.create(
+                    MongoClientSettings.builder()
+                            .applyToClusterSettings(builder ->
+                                    builder.hosts(Arrays.asList(new ServerAddress(host, port))))
+                            .build());
         }
 
         return mongoClient;
@@ -36,16 +40,5 @@ public class MongoService {
         }
 
         return this.database;
-    }
-
-    private static MongoClient createMongoClient(final String host, final Integer port)
-    {
-        MongoClient client = MongoClients.create(
-                MongoClientSettings.builder()
-                        .applyToClusterSettings(builder ->
-                                builder.hosts(Arrays.asList(new ServerAddress(host, port))))
-                        .build());
-
-        return client;
     }
 }
