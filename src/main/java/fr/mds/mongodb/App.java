@@ -3,15 +3,8 @@
  */
 package fr.mds.mongodb;
 
-import com.mongodb.client.*;
 import fr.mds.mongodb.manager.MongoSelector;
 import fr.mds.mongodb.services.MongoService;
-import fr.mds.mongodb.util.ScannerSingleton;
-import org.bson.Document;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class App {
     private static final String ARG_HOST = "--host";
