@@ -5,15 +5,10 @@ package fr.mds.mongodb;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.ListCollectionsIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import fr.mds.mongodb.util.ScannerSingleton;
-import org.bson.Document;
+import com.mongodb.client.*;
+import fr.mds.mongodb.services.MongoService;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class App {
     private static final String ARG_HOST = "--host";
@@ -40,8 +35,12 @@ public class App {
             return;
         }
 
-        MongoClient mongoClient = App.createMongoClient(host, Integer.parseInt(port));
-        MongoDatabase database = mongoClient.getDatabase(dbName);
+        MongoService mongo = new MongoService(host, Integer.parseInt(port), dbName);
+
+        MongoIterable<String> coll = mongo.getMongoDatabase().listCollectionNames();
+        for (String collectionName: coll) {
+            System.out.println(collectionName);
+        }
 
         /*
         String result = ScannerSingleton.getInstance().getInput("Enter something");
@@ -49,14 +48,8 @@ public class App {
         */
     }
 
-    public static MongoClient createMongoClient(final String host, final Integer port)
+    public static void debug()
     {
-        MongoClient client = MongoClients.create(
-                MongoClientSettings.builder()
-                        .applyToClusterSettings(builder ->
-                                builder.hosts(Arrays.asList(new ServerAddress(host, port))))
-                        .build());
-
-        return client;
+        System.out.println("Hola");
     }
 }
