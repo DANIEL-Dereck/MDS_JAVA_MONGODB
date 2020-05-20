@@ -1,9 +1,7 @@
 package fr.mds.mongodb.manager;
 
-import com.mongodb.client.MongoDatabase;
 import fr.mds.mongodb.services.MongoService;
 import fr.mds.mongodb.util.Menu;
-import fr.mds.mongodb.util.ScannerSingleton;
 
 import java.util.ArrayList;
 
@@ -18,6 +16,7 @@ public class MongoSelector {
     public void run()
     {
         String collection = selectCollection();
+        searchOrInsertDocument(collection);
     }
 
     public String selectCollection()
@@ -27,4 +26,29 @@ public class MongoSelector {
         return Menu.numberMenuSelector(collections, "Choose collection:");
     }
 
+    public void searchOrInsertDocument(String collection)
+    {
+        ArrayList<String> menu = new ArrayList<>();
+        String search = "Search";
+        String insert = "Insert";
+
+        menu.add(search);
+        menu.add(insert);
+
+        String result = Menu.numberMenuSelector(menu, "what you want to do ?");
+
+        if (result.equals(search)) {
+            search();
+        } else if (result.equals(insert)) {
+            insert();
+        }
+    }
+
+    public void search() {
+        System.out.println("WIP search");
+    }
+
+    public void insert() {
+        System.out.println("WIP insert");
+    }
 }

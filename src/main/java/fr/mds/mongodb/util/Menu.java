@@ -6,7 +6,7 @@ public class Menu {
     public static String numberMenuSelector(ArrayList<String> collections, String question)
     {
         String result = "";
-        int choise = 0;
+        int choice = 0;
         int i = 0;
 
         do {
@@ -15,13 +15,14 @@ public class Menu {
                 System.out.println(i++ + ")" + collectionName);
             }
 
-            choise = ScannerSingleton.getInstance().getInputNumber(question);
-            if (choise < i) {
-                result = collections.get(choise);
+            choice = ScannerSingleton.getInstance().getInputNumber(question);
+            if (choice >= 0 && choice < i) {
+                result = collections.get(choice);
+            } else {
+                System.out.println("Invalid choice.");
             }
         } while (result.equals(""));
 
         return result;
-
     }
 }

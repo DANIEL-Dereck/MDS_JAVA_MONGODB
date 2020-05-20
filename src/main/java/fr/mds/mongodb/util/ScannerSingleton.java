@@ -33,7 +33,16 @@ public class ScannerSingleton {
 
     public int getInputNumber()
     {
-        return scanner.nextInt();
+        int result;
+
+        if(scanner.hasNextInt()){
+            result = scanner.nextInt();
+        }else{
+            System.out.println("\"" + scanner.nextLine() + "\" => is not a number. Choose a valid number please.");
+            result = -1;
+        }
+
+        return result;
     }
 
     public int getInputNumber(String question)
@@ -41,5 +50,4 @@ public class ScannerSingleton {
         System.out.println(question);
         return getInputNumber();
     }
-
 }
