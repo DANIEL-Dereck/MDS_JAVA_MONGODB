@@ -1,6 +1,8 @@
 package fr.mds.mongodb.manager;
 
+import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import fr.mds.mongodb.services.MongoService;
 import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
@@ -89,6 +91,38 @@ public class MongoSelector {
             mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
         } else {
             System.out.println("ERROR: unknow field type.");
+        }
+
+        ArrayList<String> menu = new ArrayList<String>(){{
+            add("Nothing");
+            add("Delete All selected documents");
+            add("Delete One document selected");
+            add("Update all documents selected");
+            add("Update all document selected");
+        }};
+
+        Integer result = Menu.numberMenuSelectorPosition(menu, "what you want to do ?");
+
+        switch (result) {
+            case 1:
+                DeleteResult deleteResult = mongos.getMongoDatabase().getCollection(collection).deleteMany(filter);
+                System.out.println( deleteResult.getDeletedCount() + " éléments deleted.");
+                break;
+            case 2:
+                // TODO: delete one;
+                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+                break;
+            case 3:
+                // TODO: Update all;
+                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+                break;
+            case 4:
+                // TODO: update one;
+                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+                break;
+            case 0:
+            default:
+                break;
         }
 
         if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
