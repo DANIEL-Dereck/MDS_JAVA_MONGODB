@@ -73,13 +73,13 @@ public class MongoSelector {
 
         if (cls == String.class)
         {
-            filter = searchString(collection, field);
+            filter = searchString(field);
         } else if (cls == Integer.class)
         {
-            filter = searchInteger(collection, field);
+            filter = searchInteger(field);
         } else if (cls == Boolean.class)
         {
-            filter = searchBoolean(collection, field);
+            filter = searchBoolean(field);
         } else {
             filter = null;
         }
@@ -96,7 +96,7 @@ public class MongoSelector {
         }
     }
 
-    private Bson searchString(String collection, String field)
+    private Bson searchString(String field)
     {
         ArrayList<String> operators = new ArrayList<String>() {{
             add("$eq"); add("$ne");
@@ -120,7 +120,7 @@ public class MongoSelector {
         return filter;
     }
 
-    private Bson searchInteger(String collection, String field)
+    private Bson searchInteger(String field)
     {
         ArrayList<String> operators = new ArrayList<String>() {{
             add("$eq"); add("$ne"); add("$in"); add("$lt"); add("$lte"); add("$gt"); add("$gte");
@@ -158,7 +158,7 @@ public class MongoSelector {
         return filter;
     }
 
-    private Bson searchBoolean(String collection, String field)
+    private Bson searchBoolean(String field)
     {
         ArrayList<String> operators = new ArrayList<String>() {{
             add("$eq"); add("$ne");
