@@ -6,7 +6,9 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+
 import java.util.*;
 
 public class MongoService {
@@ -81,10 +83,20 @@ public class MongoService {
         return result;
     }
 
-    public long updateDocument(String collection)
+    public long updateDocument(String collection, Document documentsToUpdate,  Document value)
     {
-        //return this.getMongoDatabase().getCollection(collection).updateMany().getDeletedCount();
-        return 0;
+        return this.getMongoDatabase().getCollection(collection).updateMany(Filters.eq(documentsToUpdate), value).getModifiedCount();
+    }
+
+    public long updateDocument(String collection, FindIterable<org.bson.Document> documents, Document value)
+    {
+        long result = 0;
+
+        for (org.bson.Document document: documents) {
+            result += updateDocument(collection, document, value);
+        }
+
+        return result;
     }
 
     public MongoDatabase getMongoDatabase() {

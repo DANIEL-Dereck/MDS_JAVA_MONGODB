@@ -50,4 +50,24 @@ public class ScannerSingleton {
         System.out.println(question);
         return getInputNumber();
     }
+
+    public Double getInputDouble()
+    {
+        Double result;
+
+        if(scanner.hasNextInt()){
+            result = scanner.nextDouble();
+        }else{
+            System.out.println("\"" + scanner.nextLine() + "\" => is not a number. Choose a valid number please.");
+            result = -1d;
+        }
+
+        return result;
+    }
+
+    public Double getInputDouble(String question)
+    {
+        System.out.println(question);
+        return getInputDouble();
+    }
 }

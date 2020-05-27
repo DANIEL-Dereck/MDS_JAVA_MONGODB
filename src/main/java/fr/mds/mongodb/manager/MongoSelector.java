@@ -1,5 +1,6 @@
 package fr.mds.mongodb.manager;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import fr.mds.mongodb.services.MongoService;
@@ -8,6 +9,7 @@ import fr.mds.mongodb.util.ScannerSingleton;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import java.util.ArrayList;
+import java.util.logging.Filter;
 
 public class MongoSelector {
     private final MongoService mongos;
@@ -57,8 +59,7 @@ public class MongoSelector {
     }
 
     public void searchQuestions(String collection) {
-        ArrayList<String> fields = mongos.getFields(collection);
-        String field = Menu.numberMenuSelector(fields, "Which field do you want to use to search ?");
+        String field = Menu.numberMenuSelector(mongos.getFields(collection), "Which field do you want to use to search ?");
         String fieldsType = mongos.getFieldsType(collection).get(field);
 
         Class<?> cls = null;
@@ -96,6 +97,9 @@ public class MongoSelector {
         } else if (cls == Boolean.class)
         {
             filter = searchBoolean(field);
+        } else if (cls == Double.class)
+        {
+            filter = searchDouble(field);
         } else {
             filter = null;
         }
@@ -113,30 +117,43 @@ public class MongoSelector {
 
         Integer result = Menu.numberMenuSelectorPosition(menu, "what you want to do ?");
 
+        Document documentToUpdate = null;
         long numberItemsChange = 0;
+
+        ArrayList<String> listStringItem = new ArrayList<>();
+        documentsFound.forEach(x -> {
+            listStringItem.add(x.toJson());
+        });
 
         switch (result) {
             case 1:
                 numberItemsChange = mongos.deleteDocument(collection, documentsFound);
-                System.out.println( numberItemsChange + " document deleted.");
+                System.out.println( numberItemsChange + " documents deleted.");
                 break;
             case 2:
-                ArrayList<String> listStringItem = new ArrayList<>();
-                documentsFound.forEach(x -> {
-                    listStringItem.add(x.toJson());
-                });
-
                 String itemToDelete = Menu.numberMenuSelector(listStringItem, "Which document do you want to delete ?");
                 numberItemsChange = mongos.deleteDocument(collection, Document.parse(itemToDelete));
-                System.out.println( numberItemsChange + " document deleted.");
+                System.out.println( numberItemsChange + " documents deleted.");
                 break;
             case 3:
-                // TODO: Update all;
-                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
-                break;
+                String itemToUpdate = Menu.numberMenuSelector(listStringItem, "Which document do you want to update ?");
+                documentToUpdate = Document.parse(itemToUpdate);
             case 4:
-                // TODO: update one;
-                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+                String fieldToUpdate = Menu.numberMenuSelector(mongos.getFields(collection), "Which field do you want to update ?");
+                String value = Menu.numberMenuSelector(mongos.getFields(collection), "Which value ?");
+
+                Document filter = new Document();
+                filter.append("$set", 33);
+                // TODO: create BSON filter.
+
+                if (documentToUpdate != null)
+                {
+                    numberItemsChange = mongos.updateDocument(collection, documentToUpdate, null);
+                } else {
+                    numberItemsChange = mongos.updateDocument(collection, documentsFound,null);
+                }
+
+                System.out.println( numberItemsChange + " documents updated.");
                 break;
             case 0:
             default:
@@ -178,6 +195,44 @@ public class MongoSelector {
 
         String operator = Menu.numberMenuSelector(operators, "Which operator do you want to use ?");
         Integer value = ScannerSingleton.getInstance().getInputNumber("Insert value");
+
+        Bson filter = null;
+
+        switch (operator) {
+            case "$eq":
+                filter = Filters.eq(field, value);
+                break;
+            case "$ne":
+                filter = Filters.ne(field, value);
+                break;
+            case "$in":
+                filter = Filters.in(field, value);
+                break;
+            case "$lt":
+                filter = Filters.lt(field, value);
+                break;
+            case "$lte":
+                filter = Filters.lte(field, value);
+                break;
+            case "$gt":
+                filter = Filters.gt(field, value);
+                break;
+            case "$gte":
+                filter = Filters.gte(field, value);
+                break;
+        }
+
+        return filter;
+    }
+
+    private Bson searchDouble(String field)
+    {
+        ArrayList<String> operators = new ArrayList<String>() {{
+            add("$eq"); add("$ne"); add("$in"); add("$lt"); add("$lte"); add("$gt"); add("$gte");
+        }};
+
+        String operator = Menu.numberMenuSelector(operators, "Which operator do you want to use ?");
+        Double value = ScannerSingleton.getInstance().getInputDouble("Insert value");
 
         Bson filter = null;
 
