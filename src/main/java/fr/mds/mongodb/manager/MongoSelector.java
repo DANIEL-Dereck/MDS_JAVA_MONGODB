@@ -1,9 +1,10 @@
 package fr.mds.mongodb.manager;
 
-import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Filters;
 import fr.mds.mongodb.services.MongoService;
 import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 
@@ -44,7 +45,7 @@ public class MongoSelector {
         String result = Menu.numberMenuSelector(menu, "what you want to do ?");
 
         if (result.equals(search)) {
-            search(collection);
+            searchQuestions(collection);
         } else if (result.equals(insert)) {
             insert(collection);
         }
@@ -54,33 +55,131 @@ public class MongoSelector {
         }
     }
 
-    public void search(String collection) {
-        ArrayList<String> fields = new ArrayList<>();
-        ArrayList<String> operators = new ArrayList<String>() {{
-            add("$eq"); add("$ne"); add("$in"); add("$lt"); add("$lte"); add("$gt"); add("$gte");
-            }};
-
-        mongos.getMongoDatabase().getCollection(collection).find().forEach(x -> {
-            x.keySet().forEach(y -> {
-                if (!fields.contains(y)) {
-                    fields.add(y);
-                }
-            });
-        });
-
+    public void searchQuestions(String collection) {
+        ArrayList<String> fields = mongos.getFields(collection);
         String field = Menu.numberMenuSelector(fields, "Which field do you want to use to search ?");
+        String fieldsType = mongos.getFieldsType(collection).get(field);
+
+        Class<?> cls = null;
+
+        try {
+            cls = Class.forName(fieldsType);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            cls = String.class;
+        }
+
+        Bson filter = null;
+
+        if (cls == String.class)
+        {
+            filter = searchString(collection, field);
+        } else if (cls == Integer.class)
+        {
+            filter = searchInteger(collection, field);
+        } else if (cls == Boolean.class)
+        {
+            filter = searchBoolean(collection, field);
+        } else {
+            filter = null;
+        }
+
+        if (filter != null)
+        {
+            mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+        } else {
+            System.out.println("ERROR: unknow field type.");
+        }
+
+        if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
+            searchQuestions(collection);
+        }
+    }
+
+    private Bson searchString(String collection, String field)
+    {
+        ArrayList<String> operators = new ArrayList<String>() {{
+            add("$eq"); add("$ne");
+        }};
+
         String operator = Menu.numberMenuSelector(operators, "Which operator do you want to use ?");
         String value = ScannerSingleton.getInstance().getInputString("Insert value");
         value = ScannerSingleton.getInstance().getInput();
 
-        BasicDBObject whereQuery = new BasicDBObject();
-        whereQuery.append(field, new BasicDBObject(operator, value));
+        Bson filter = null;
 
-        mongos.getMongoDatabase().getCollection(collection).find(whereQuery).forEach(x -> System.out.println(x));
-
-        if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
-            search(collection);
+        switch (operator) {
+            case "$eq":
+                filter = Filters.eq(field, value);
+                break;
+            case "$ne":
+                filter = Filters.ne(field, value);
+                break;
         }
+
+        return filter;
+    }
+
+    private Bson searchInteger(String collection, String field)
+    {
+        ArrayList<String> operators = new ArrayList<String>() {{
+            add("$eq"); add("$ne"); add("$in"); add("$lt"); add("$lte"); add("$gt"); add("$gte");
+        }};
+
+        String operator = Menu.numberMenuSelector(operators, "Which operator do you want to use ?");
+        Integer value = ScannerSingleton.getInstance().getInputNumber("Insert value");
+
+        Bson filter = null;
+
+        switch (operator) {
+            case "$eq":
+                filter = Filters.eq(field, value);
+                break;
+            case "$ne":
+                filter = Filters.ne(field, value);
+                break;
+            case "$in":
+                filter = Filters.in(field, value);
+                break;
+            case "$lt":
+                filter = Filters.lt(field, value);
+                break;
+            case "$lte":
+                filter = Filters.lte(field, value);
+                break;
+            case "$gt":
+                filter = Filters.gt(field, value);
+                break;
+            case "$gte":
+                filter = Filters.gte(field, value);
+                break;
+        }
+
+        return filter;
+    }
+
+    private Bson searchBoolean(String collection, String field)
+    {
+        ArrayList<String> operators = new ArrayList<String>() {{
+            add("$eq"); add("$ne");
+        }};
+
+        String operator = Menu.numberMenuSelector(operators, "Which operator do you want to use ?");
+        Boolean value = Boolean.valueOf(ScannerSingleton.getInstance().getInputString("Insert value"));
+        value = Boolean.valueOf(ScannerSingleton.getInstance().getInput());
+
+        Bson filter = null;
+
+        switch (operator) {
+            case "$eq":
+                filter = Filters.eq(field, value);
+                break;
+            case "$ne":
+                filter = Filters.ne(field, value);
+                break;
+        }
+
+        return filter;
     }
 
     public void insert(String collection) {

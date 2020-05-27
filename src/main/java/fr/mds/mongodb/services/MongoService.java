@@ -6,7 +6,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class MongoService {
     private final String host;
@@ -32,6 +32,38 @@ public class MongoService {
         }
 
         return mongoClient;
+    }
+
+    public ArrayList<String> getFields(String collection)
+    {
+        ArrayList<String> fields = new ArrayList<>();
+
+        this.getMongoDatabase().getCollection(collection).find().forEach(x -> {
+            x.keySet().forEach(y -> {
+                if (!fields.contains(y)) {
+                    fields.add(y);
+                }
+            });
+        });
+
+        return fields;
+    }
+
+    public Map<String, String> getFieldsType(String collection)
+    {
+        ArrayList<String> fields = new ArrayList<>();
+        Map<String, String> fieldsType = new HashMap<>();
+
+        this.getMongoDatabase().getCollection(collection).find().forEach(x -> {
+            x.keySet().forEach(y -> {
+                if (!fields.contains(y)) {
+                    fields.add(y);
+                    fieldsType.put(y, x.get(y) == null ? "null" : x.get(y).getClass().getName());
+                }
+            });
+        });
+
+        return fieldsType;
     }
 
     public MongoDatabase getMongoDatabase() {
