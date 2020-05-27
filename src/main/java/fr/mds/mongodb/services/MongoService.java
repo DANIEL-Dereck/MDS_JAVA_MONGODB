@@ -7,7 +7,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-
 import java.util.*;
 
 public class MongoService {
@@ -53,13 +52,11 @@ public class MongoService {
 
     public Map<String, String> getFieldsType(String collection)
     {
-        ArrayList<String> fields = new ArrayList<>();
         Map<String, String> fieldsType = new HashMap<>();
 
         this.getMongoDatabase().getCollection(collection).find().forEach(x -> {
             x.keySet().forEach(y -> {
-                if (!fields.contains(y)) {
-                    fields.add(y);
+                if (!fieldsType.containsKey(y)) {
                     fieldsType.put(y, x.get(y) == null ? "null" : x.get(y).getClass().getName());
                 }
             });
@@ -82,6 +79,12 @@ public class MongoService {
         }
 
         return result;
+    }
+
+    public long updateDocument(String collection)
+    {
+        //return this.getMongoDatabase().getCollection(collection).updateMany().getDeletedCount();
+        return 0;
     }
 
     public MongoDatabase getMongoDatabase() {

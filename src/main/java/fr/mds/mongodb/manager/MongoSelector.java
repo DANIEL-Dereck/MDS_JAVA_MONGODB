@@ -7,7 +7,6 @@ import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-
 import java.util.ArrayList;
 
 public class MongoSelector {

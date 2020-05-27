@@ -26,6 +26,7 @@ dependencies {
     implementation 'com.google.guava:guava:28.2-jre'
     compile 'org.mongodb:mongodb-driver-sync:4.0.3'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    implementation 'com.github.javafaker:javafaker:1.0.2'
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'

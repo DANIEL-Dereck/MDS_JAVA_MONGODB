@@ -7,6 +7,28 @@ import fr.mds.mongodb.manager.MongoSelector;
 import fr.mds.mongodb.services.MongoService;
 
 public class App {
+
+    /*
+     * Subject:
+     * Créer une nouvelle application Java avec Gradle.
+     * Cette application devra permettre de se connecter à une base NoSQL (la créer le cas échéant) et manipuler les collections qui la compose.
+     * L'ensemble de l'interface dois être réalisé en ligne de commande.
+     * 1 - L'application doit prendre en paramètre d'entré l'ensemble des informations nécessaire à la connexion. Nous n'utiliserons qu'une seule base de données sur un seul host.
+     * 2 - L'application doit permettre de sélectionner une collection sur la base de données puis de choisir si on veut rechercher ou insérer un document
+     * 3 - Pour une recherche on sélectionnera parmit l'ensemble des champ possible un champ puis on sélectionnera un opérateur de comparaison puis on insérera la valeur à utiliser pour la recherche.
+     * 4 - Suite à une recherche on peut choisir de :
+     *		- 4.1 - supprimer les documents récupéré
+     *		- 4.2 - supprimer un des documents récupéré
+     *		- 4.3 - modifier les documents récupéré
+     *			- 4.3.1 - on sélectionnera un seul champ à mettre à jour ainsi que ça nouvelle valeur
+     *		- 4.4 - modifier un document parmis les documents récupéré
+     *			- 4.4.1 - on sélectionnera le document à modifier par son champ "_id"
+     *			- 4.4.2 - on sélectionnera un seul champ à mettre à jour ainsi que ça nouvelle valeur
+     * 5 - Pour l'insertion, l'application demandera les valeurs à utiliser pour chaque champ possible, le fait de renseigner la chaine "null" premettra de ne pas renseigner le champ.
+     * 6 - Donner à l'application la fonctionnalité de générer des documents de manière aléatoire en utilisant https://github.com/DiUS/java-faker
+     */
+
+
     private static final String ARG_HOST = "--host";
     private static final String ARG_PORT = "--port";
     private static final String ARG_DBNAME = "--dbName";
@@ -32,10 +54,5 @@ public class App {
         }
 
         new MongoSelector(new MongoService(host, Integer.parseInt(port), dbName)).run();
-    }
-
-    public static void debug()
-    {
-        System.out.println("Debug");
     }
 }
