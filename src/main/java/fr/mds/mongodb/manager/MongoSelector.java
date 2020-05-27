@@ -1,17 +1,17 @@
 package fr.mds.mongodb.manager;
 
-import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.result.DeleteResult;
 import fr.mds.mongodb.services.MongoService;
 import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 
 public class MongoSelector {
-    private MongoService mongos;
+    private final MongoService mongos;
 
     public MongoSelector(MongoService mongos)
     {
@@ -63,7 +63,6 @@ public class MongoSelector {
         String fieldsType = mongos.getFieldsType(collection).get(field);
 
         Class<?> cls = null;
-
         try {
             cls = Class.forName(fieldsType);
         } catch (ClassNotFoundException e) {
@@ -71,8 +70,24 @@ public class MongoSelector {
             cls = String.class;
         }
 
-        Bson filter = null;
+        Bson filter = getFilter(field, cls);
 
+        if (filter != null)
+        {
+            FindIterable<Document> documentsFound =  mongos.getMongoDatabase().getCollection(collection).find(filter);
+            documentsFound.forEach(x -> System.out.println(x.toJson()));
+            documentOperation(collection, documentsFound);
+        } else {
+            System.out.println("ERROR: unknow field type.");
+        }
+
+        if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
+            searchQuestions(collection);
+        }
+    }
+
+    private Bson getFilter(String field, Class<?> cls) {
+        Bson filter;
         if (cls == String.class)
         {
             filter = searchString(field);
@@ -85,14 +100,10 @@ public class MongoSelector {
         } else {
             filter = null;
         }
+        return filter;
+    }
 
-        if (filter != null)
-        {
-            mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
-        } else {
-            System.out.println("ERROR: unknow field type.");
-        }
-
+    private void documentOperation(String collection, FindIterable<Document> documentsFound) {
         ArrayList<String> menu = new ArrayList<String>(){{
             add("Nothing");
             add("Delete All selected documents");
@@ -103,14 +114,22 @@ public class MongoSelector {
 
         Integer result = Menu.numberMenuSelectorPosition(menu, "what you want to do ?");
 
+        long numberItemsChange = 0;
+
         switch (result) {
             case 1:
-                DeleteResult deleteResult = mongos.getMongoDatabase().getCollection(collection).deleteMany(filter);
-                System.out.println( deleteResult.getDeletedCount() + " éléments deleted.");
+                numberItemsChange = mongos.deleteDocument(collection, documentsFound);
+                System.out.println( numberItemsChange + " document deleted.");
                 break;
             case 2:
-                // TODO: delete one;
-                //mongos.getMongoDatabase().getCollection(collection).find(filter).forEach(x -> System.out.println(x.toJson()));
+                ArrayList<String> listStringItem = new ArrayList<>();
+                documentsFound.forEach(x -> {
+                    listStringItem.add(x.toJson());
+                });
+
+                String itemToDelete = Menu.numberMenuSelector(listStringItem, "Which document do you want to delete ?");
+                numberItemsChange = mongos.deleteDocument(collection, Document.parse(itemToDelete));
+                System.out.println( numberItemsChange + " document deleted.");
                 break;
             case 3:
                 // TODO: Update all;
@@ -124,10 +143,6 @@ public class MongoSelector {
             default:
                 break;
         }
-
-        if (Menu.menuYesNo("Continue to search ?").equals("yes")) {
-            searchQuestions(collection);
-        }
     }
 
     private Bson searchString(String field)
@@ -140,14 +155,16 @@ public class MongoSelector {
         String value = ScannerSingleton.getInstance().getInputString("Insert value");
         value = ScannerSingleton.getInstance().getInput();
 
-        Bson filter = null;
-
+        Bson filter;
         switch (operator) {
             case "$eq":
                 filter = Filters.eq(field, value);
                 break;
             case "$ne":
                 filter = Filters.ne(field, value);
+                break;
+            default:
+                filter = null;
                 break;
         }
 
