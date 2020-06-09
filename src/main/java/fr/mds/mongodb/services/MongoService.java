@@ -83,6 +83,11 @@ public class MongoService {
         return result;
     }
 
+    public void insert(String collection, Document document)
+    {
+        this.getMongoDatabase().getCollection(collection).insertOne(document);
+    }
+
     public long updateDocument(String collection, Document documentsToUpdate,  Document value)
     {
         return this.getMongoDatabase().getCollection(collection).updateMany(Filters.eq(documentsToUpdate), value).getModifiedCount();

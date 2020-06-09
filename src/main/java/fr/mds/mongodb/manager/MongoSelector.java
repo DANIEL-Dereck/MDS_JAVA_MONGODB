@@ -1,15 +1,16 @@
 package fr.mds.mongodb.manager;
 
-import com.mongodb.BasicDBObject;
+import com.github.javafaker.Faker;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import fr.mds.mongodb.services.MongoService;
 import fr.mds.mongodb.util.Menu;
 import fr.mds.mongodb.util.ScannerSingleton;
-import org.bson.Document;
+import org.bson.*;
 import org.bson.conversions.Bson;
 import java.util.ArrayList;
-import java.util.logging.Filter;
+import java.util.List;
+import java.util.UUID;
 
 public class MongoSelector {
     private final MongoService mongos;
@@ -29,14 +30,14 @@ public class MongoSelector {
         }
     }
 
-    public String selectCollection()
+    private String selectCollection()
     {
         ArrayList<String> collections = new ArrayList<>();
         mongos.getMongoDatabase().listCollectionNames().forEach(collections::add);
         return Menu.numberMenuSelector(collections, "Choose collection:");
     }
 
-    public void searchOrInsertDocument(String collection)
+    private void searchOrInsertDocument(String collection)
     {
         ArrayList<String> menu = new ArrayList<>();
         String search = "Search";
@@ -58,7 +59,7 @@ public class MongoSelector {
         }
     }
 
-    public void searchQuestions(String collection) {
+    private void searchQuestions(String collection) {
         String field = Menu.numberMenuSelector(mongos.getFields(collection), "Which field do you want to use to search ?");
         String fieldsType = mongos.getFieldsType(collection).get(field);
 
@@ -287,11 +288,85 @@ public class MongoSelector {
         return filter;
     }
 
-    public void insert(String collection) {
+    private void insert(String collection) {
         System.out.println("WIP insert");
+
+        if (Menu.menuYesNo("Generate random insert ?").equals("yes")) {
+            fakerDocumentGenerator(collection);
+        } else {
+            documentGenerator(collection);
+        }
 
         if (Menu.menuYesNo("Continue to insert ?").equals("yes")) {
             insert(collection);
         }
+    }
+
+    private void documentGenerator(String collection)
+    {
+        Document newDocument = new Document();
+
+        for (String key : mongos.getFields(collection)) {
+            Class<?> cls = null;
+            try {
+                cls = Class.forName(mongos.getFieldsType(collection).get(key));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                cls = String.class;
+            }
+
+            if (cls == String.class) {
+                if (key.equals("_id")) {
+                    newDocument.append(key, new BsonString(UUID.randomUUID().toString()));
+                } else {
+                    newDocument.append(key, new BsonString(ScannerSingleton.getInstance().getInputString(key + ": Insert value ")));
+                }
+            } else if (cls == Integer.class) {
+                newDocument.append(key, new BsonInt32(ScannerSingleton.getInstance().getInputNumber(key + ": Insert value ")));
+            } else if (cls == Boolean.class) {
+                newDocument.append(key, new BsonBoolean(Menu.menuTrueFalse(key + ": insert value ")));
+            } else if (cls == Double.class) {
+                newDocument.append(key, new BsonDouble(ScannerSingleton.getInstance().getInputDouble(key + ": Insert value ")));
+            }
+        }
+
+        System.out.println(String.format("Insert %s", newDocument.toJson()));
+        mongos.insert(collection, newDocument);
+    }
+
+    private void fakerDocumentGenerator(String collection) {
+        Document newDocument = new Document();
+
+        for (String key : mongos.getFields(collection)) {
+            Class<?> cls = null;
+            try {
+                cls = Class.forName(mongos.getFieldsType(collection).get(key));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                cls = String.class;
+            }
+
+            if (cls == String.class) {
+                if (key.equals("_id")) {
+                    newDocument.append(key, new BsonString(UUID.randomUUID().toString()));
+                } else {
+                    StringBuilder builder = new StringBuilder();
+                    List<String> strings = Faker.instance().lorem().words(Faker.instance().number().numberBetween(1, 5));
+                    for (String string : strings) {
+                        builder.append(string);
+                    }
+                    newDocument.append(key, new BsonString(builder.toString()));
+                }
+            } else if (cls == Integer.class) {
+                newDocument.append(key, new BsonInt32(Faker.instance().number().numberBetween(1, Integer.MAX_VALUE)));
+            } else if (cls == Boolean.class) {
+                newDocument.append(key, new BsonBoolean(Faker.instance().bool().bool()));
+            } else if (cls == Double.class) {
+                newDocument.append(key, new BsonDouble(Faker.instance().number().randomDouble(20, -Integer.MAX_VALUE, Integer.MAX_VALUE)));
+            }
+        }
+
+        System.out.println(String.format("Insert %s", newDocument.toJson()));
+        mongos.insert(collection, newDocument);
     }
 }
